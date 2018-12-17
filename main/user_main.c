@@ -39,6 +39,10 @@ static xQueueHandle example_espnow_queue;
 static uint8_t example_broadcast_mac[ESP_NOW_ETH_ALEN] = { 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF };
 static uint16_t s_example_espnow_seq[EXAMPLE_ESPNOW_DATA_MAX] = { 0, 0 };
 
+#define ESPNOW_NODES 2
+typedef  uint8_t peer_list_t[ESP_NOW_ETH_ALEN];
+peer_list_t peer_list[ESPNOW_NODES];
+
 static void example_espnow_deinit(example_espnow_send_param_t *send_param);
 
 static esp_err_t example_event_handler(void *ctx, system_event_t *event)
@@ -224,10 +228,47 @@ static void example_espnow_task(void *pvParameter)
                     int n = 0;
                     for (e = esp_now_fetch_peer(1,peer_info); e == ESP_OK; e = esp_now_fetch_peer(0,peer_info))
                     {
+                    	memcpy(peer_list[n], peer_info->peer_addr, 6);
                     	ESP_LOGE(TAG, "Adresa peer %d:  "MACSTR" ", n,  MAC2STR(peer_info->peer_addr));
+                    	ESP_LOGE(TAG, "Adresa peerdin peer list %d:  "MACSTR" ", n,  MAC2STR(peer_list[n]));
                     	++n;
 
                     }
+
+                    /* Delay a while before sending the next data. */
+                    if (send_param->delay > 0) {
+                        vTaskDelay(send_param->delay/portTICK_RATE_MS);
+                    }
+
+                    ESP_LOGI(TAG, "send data to "MACSTR"", MAC2STR(peer_list[0]));
+
+                    memcpy(send_param->dest_mac, peer_list[0], ESP_NOW_ETH_ALEN);
+                    example_espnow_data_prepare(send_param);
+                    ESP_LOGW(TAGT, "send data in send");
+                    /* Send the next data after the previous data is sent. */
+                    if (esp_now_send(send_param->dest_mac, send_param->buffer, send_param->len) != ESP_OK) {
+                        ESP_LOGE(TAG, "Send error");
+                        example_espnow_deinit(send_param);
+                        vTaskDelete(NULL);
+                    }
+
+                    /* Delay a while before sending the next data. */
+                    if (send_param->delay > 0) {
+                        vTaskDelay(send_param->delay/portTICK_RATE_MS);
+                    }
+
+                    ESP_LOGI(TAG, "send data to "MACSTR"", MAC2STR(peer_list[1]));
+
+                    memcpy(send_param->dest_mac, peer_list[1], ESP_NOW_ETH_ALEN);
+                    example_espnow_data_prepare(send_param);
+                    ESP_LOGW(TAGT, "send data in send");
+                    /* Send the next data after the previous data is sent. */
+                    if (esp_now_send(send_param->dest_mac, send_param->buffer, send_param->len) != ESP_OK) {
+                        ESP_LOGE(TAG, "Send error");
+                        example_espnow_deinit(send_param);
+                        vTaskDelete(NULL);
+                    }
+
                     	/*
                     for (t = 0; t < peer_number->total_num; t++)
                     {
