@@ -118,7 +118,7 @@
  *                                            GLOBAL MACRO'S
  *********************************************************************************************************
  */
-#define ESPNOW_IS_BROADCAST_ADDR(addr) (memcmp(addr, example_broadcast_mac, ESP_NOW_ETH_ALEN) == 0)
+#define ESPNOW_IS_BROADCAST_ADDR(addr) (memcmp(addr, EspNow_Broadcast_MAC_Addr, ESP_NOW_ETH_ALEN) == 0)
 
  /*
  *********************************************************************************************************
@@ -140,7 +140,7 @@ typedef struct {
 typedef struct {
     uint8_t  mac_addr[ESP_NOW_ETH_ALEN];
     uint8_t *data;
-    int      data_len;
+    int32_t  data_len;
 } ESPNOW_RECEIVE_CB_EVENT;
 
 
@@ -180,7 +180,7 @@ typedef struct {                              /* Parameters of sending ESPNOW da
     uint32_t  magic;                          /* Magic number which is used to determine which device to send unicast ESPNOW data. */
     uint16_t  count;                          /* Total count of unicast ESPNOW data to be sent.                                    */
     uint16_t  delay;                          /* Delay between sending two ESPNOW data, unit: ms.                                  */
-    int       len;                            /* Length of ESPNOW data to be sent, unit: byte.                                     */
+    int32_t   len;                            /* Length of ESPNOW data to be sent, unit: byte.                                     */
     uint8_t  *buffer;                         /* Buffer pointing to ESPNOW data.                                                   */
     uint8_t   dest_mac[ESP_NOW_ETH_ALEN];     /* MAC address of destination device.                                                */
 } ESPNOW_SEND_PARAM;

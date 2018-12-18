@@ -21,6 +21,5 @@ void app_main()
     // Initialize NVS
     ESP_ERROR_CHECK( nvs_flash_init() );
 
-    EspNow_WifiInit();
     EspNow_Init();
 }
